@@ -8,9 +8,11 @@ Before running the application, it's recommended to set up a virtual environment
 
 ### Create Virtual Environment
 
-````bash
+```
+bash
 # Replace <version> with the desired Python version, e.g., 3.8
-python<version> -m venv <virtual-environment-name>```
+python<version> -m venv <virtual-environment-name>
+```
 
 
 ### Activate Environment
@@ -45,11 +47,9 @@ pip install -r requirements.txt
 
 1. Clone the repository to your local machine:
 
-````
-
+```
 https://github.com/clinton-dev/domain-tracking-app.git
-
-````
+```
 
 ```cd domain-tracking-app```
 
@@ -57,13 +57,8 @@ https://github.com/clinton-dev/domain-tracking-app.git
 
 ### Usage
 
-To run the application, execute the `main.py` script:
+To run the application, execute the `main.py` script: `python main.py`
 
-````
-
-python main.py
-
-```
 
 The application will start checking the status of the domains, and a progress bar will indicate the progress. Once the check is complete, the results will be saved in the `previous-runs` folder as an Excel file named `DomainStatus_YYYY-MM-DD_HH-MM-SS.xlsx`, where `YYYY-MM-DD` is the current date and `HH-MM-SS` is the current time.
 
@@ -85,4 +80,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - The application uses the [pandas](https://pandas.pydata.org/), [requests](https://docs.python-requests.org/), [tqdm](https://github.com/tqdm/tqdm), and [humanize](https://github.com/jmoiron/humanize) libraries. Special thanks to the authors and contributors of these libraries.
 
 
-```
