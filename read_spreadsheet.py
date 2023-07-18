@@ -1,18 +1,32 @@
 import os
 import pandas as pd
 import requests
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from tqdm import tqdm
 import humanize  # for human-readable time format
 
 def read_spreadsheet(file_path):
-    # Read the spreadsheet file into a pandas DataFrame, skip the first two rows
-    df = pd.read_excel(file_path, skiprows=[0, 1])
+    """Read the spreadsheet file into a pandas DataFrame.
 
+    Args:
+        file_path (str): The path to the spreadsheet file.
+
+    Returns:
+        pd.DataFrame: The DataFrame containing the spreadsheet data.
+    """
+    df = pd.read_excel(file_path, skiprows=[0, 1])
     return df
 
 def check_domain_status(domain_url):
+    """Check the status of a domain.
+
+    Args:
+        domain_url (str): The domain URL to check.
+
+    Returns:
+        tuple: A tuple containing the domain URL and its status.
+    """
     full_url = 'https://' + domain_url
 
     try:
@@ -25,58 +39,59 @@ def check_domain_status(domain_url):
 
     return (domain_url, "Up and running")
 
+def save_domain_status_to_excel(domain_status_list):
+    """Save the domain status data to an Excel file.
+
+    Args:
+        domain_status_list (list): A list of tuples containing domain status data.
+
+    Returns:
+        str: The path of the saved Excel file.
+    """
+    columns = ['Domain', 'Status']
+    domain_status_df = pd.DataFrame(domain_status_list, columns=columns)
+
+    # Filter sites with "Up and running"
+    filtered_df = domain_status_df[domain_status_df["Status"] != "Up and running"]
+
+    now = datetime.now()
+    current_time = now.strftime("%Y-%m-%d_%H-%M-%S")
+    output_file_name = f"DomainStatus_{current_time}.xlsx"
+
+    if not os.path.exists('previous-runs'):
+        os.makedirs('previous-runs')
+
+    output_file_path = os.path.join('previous-runs', output_file_name)
+    filtered_df.to_excel(output_file_path, index=False)
+
+    return output_file_path
+
 def main():
     file_path = 'files\DomainTracking.xlsx'
 
     try:
-        # Record the start time before the main execution starts
         start_time = datetime.now()
 
         spreadsheet_data = read_spreadsheet(file_path)
-
-        # Extract the 'Domain' column from the DataFrame as a list
         domain_list = spreadsheet_data['DOMAIN'].dropna().tolist()
 
         with ThreadPoolExecutor() as executor:
-            # Get the number of workers (threads) in the executor
-            num_threads = executor._max_workers
-
-            # Use tqdm to create a progress bar for the domain status checks
             with tqdm(total=len(domain_list), desc="Checking domains", unit="domain") as pbar:
-                # Submit the check_domain_status function for each domain in the list
-                results = executor.map(check_domain_status, domain_list)
+                futures = [executor.submit(check_domain_status, domain) for domain in domain_list]
+                for future in as_completed(futures):
+                    pbar.update(1)
 
-                # Collect the results into a list
-                domain_status_list = list(results)
+        domain_status_list = [future.result() for future in futures]
 
-                # Update the progress bar for each completed domain status check
-                pbar.update(len(domain_list))
+        output_file_path = save_domain_status_to_excel(domain_status_list)
 
-        # Create a DataFrame for the domain status data
-        columns = ['Domain', 'Status']
-        domain_status_df = pd.DataFrame(domain_status_list, columns=columns)
-
-        now = datetime.now()
-        current_time = now.strftime("%Y-%m-%d_%H-%M-%S")
-        output_file_name = f"DomainStatus_{current_time}.xlsx"
-
-        if not os.path.exists('previous-runs'):
-            os.makedirs('previous-runs')
-
-        # Save the domain status data to the 'previous-runs' folder
-        output_file_path = os.path.join('previous-runs', output_file_name)
-        domain_status_df.to_excel(output_file_path, index=False)
-
-        # Calculate and display the total time taken and the number of threads used
         end_time = datetime.now()
         total_time = end_time - start_time
-
-        # Format the total time to be human-readable
         formatted_time = humanize.precisedelta(total_time, minimum_unit='seconds')
 
         print(f"\nDomain status data saved to '{output_file_path}'.")
         print(f"Total time taken: {formatted_time}")
-        print(f"Number of threads used: {num_threads}")
+        print(f"Number of threads used: {executor._max_workers}")
 
     except FileNotFoundError:
         print("File not found. Please check the file path.")
