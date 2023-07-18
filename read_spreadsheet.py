@@ -20,13 +20,13 @@ def check_domain_status(df):
 
     for index, row in df.iterrows():
         domain_url = row['Domain']
+        full_url = 'https://' + domain_url
 
         try:
-            response = requests.get(domain_url)
-            if response.status_code == 200:
-                domain_status_list.append((domain_url, "Up and running"))
-            else:
+            response = requests.get(full_url)
+            if response.status_code != 200:
                 domain_status_list.append((domain_url, f"Down with status code: {response.status_code}"))
+
         except requests.exceptions.RequestException as e:
             domain_status_list.append((domain_url, f"Down with an error: {e}"))
 
