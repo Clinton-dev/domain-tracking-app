@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from tqdm import tqdm  # Import tqdm library for the progress bar
 
 def read_spreadsheet(file_path):
     # Read the spreadsheet file into a pandas DataFrame, skip the first two rows
@@ -40,8 +41,14 @@ def main():
             # Get the number of workers (threads) in the executor
             num_threads = executor._max_workers
 
-            # Submit the check_domain_status function for each domain in the list
-            results = executor.map(check_domain_status, domain_list)
+            # Use tqdm to create a progress bar for the domain status checks
+            with tqdm(total=len(domain_list), desc="Checking domains", unit="domain") as pbar:
+                # Submit the check_domain_status function for each domain in the list
+                results = executor.map(check_domain_status, domain_list)
+
+                # Update the progress bar for each completed domain status check
+                for _ in results:
+                    pbar.update(1)
 
         # Collect the results into a list
         domain_status_list = list(results)
