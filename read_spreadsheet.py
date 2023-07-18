@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import requests
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 def read_spreadsheet(file_path):
@@ -9,28 +10,18 @@ def read_spreadsheet(file_path):
 
     return df
 
-def check_domain_status(df):
-    df = df.dropna(axis=1, how='all')
+def check_domain_status(domain_url):
+    full_url = 'https://' + domain_url
 
-    df = df.rename(columns={'DOMAIN': 'Domain'})
+    try:
+        response = requests.get(full_url)
+        if response.status_code != 200:
+            return (domain_url, f"Down with status code: {response.status_code}")
 
-    df = df.dropna(subset=['Domain'])
+    except requests.exceptions.RequestException as e:
+        return (domain_url, f"Down with an error: {e}")
 
-    domain_status_list = []
-
-    for index, row in df.iterrows():
-        domain_url = row['Domain']
-        full_url = 'https://' + domain_url
-
-        try:
-            response = requests.get(full_url)
-            if response.status_code != 200:
-                domain_status_list.append((domain_url, f"Down with status code: {response.status_code}"))
-
-        except requests.exceptions.RequestException as e:
-            domain_status_list.append((domain_url, f"Down with an error: {e}"))
-
-    return domain_status_list
+    return (domain_url, "Up and running")
 
 def main():
     file_path = 'files\DomainTracking.xlsx'
@@ -38,7 +29,16 @@ def main():
     try:
         spreadsheet_data = read_spreadsheet(file_path)
 
-        domain_status_list = check_domain_status(spreadsheet_data)
+        # Extract the 'Domain' column from the DataFrame as a list
+        domain_list = spreadsheet_data['DOMAIN'].dropna().tolist()
+
+        # Use ThreadPoolExecutor to check domain status using multiple threads
+        with ThreadPoolExecutor() as executor:
+            # Submit the check_domain_status function for each domain in the list
+            results = executor.map(check_domain_status, domain_list)
+
+        # Collect the results into a list
+        domain_status_list = list(results)
 
         # Create a DataFrame for the domain status data
         columns = ['Domain', 'Status']
