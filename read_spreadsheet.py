@@ -4,7 +4,7 @@ import requests
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from tqdm import tqdm
-import humanize  # Import humanize library for human-readable time format
+import humanize  # for human-readable time format
 
 def read_spreadsheet(file_path):
     # Read the spreadsheet file into a pandas DataFrame, skip the first two rows
@@ -37,7 +37,6 @@ def main():
         # Extract the 'Domain' column from the DataFrame as a list
         domain_list = spreadsheet_data['DOMAIN'].dropna().tolist()
 
-        # Use ThreadPoolExecutor to check domain status using multiple threads
         with ThreadPoolExecutor() as executor:
             # Get the number of workers (threads) in the executor
             num_threads = executor._max_workers
@@ -47,12 +46,11 @@ def main():
                 # Submit the check_domain_status function for each domain in the list
                 results = executor.map(check_domain_status, domain_list)
 
-                # Update the progress bar for each completed domain status check
-                for _ in results:
-                    pbar.update(1)
+                # Collect the results into a list
+                domain_status_list = list(results)
 
-        # Collect the results into a list
-        domain_status_list = list(results)
+                # Update the progress bar for each completed domain status check
+                pbar.update(len(domain_list))
 
         # Create a DataFrame for the domain status data
         columns = ['Domain', 'Status']
