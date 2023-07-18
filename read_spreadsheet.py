@@ -37,6 +37,9 @@ def main():
 
         # Use ThreadPoolExecutor to check domain status using multiple threads
         with ThreadPoolExecutor() as executor:
+            # Get the number of workers (threads) in the executor
+            num_threads = executor._max_workers
+
             # Submit the check_domain_status function for each domain in the list
             results = executor.map(check_domain_status, domain_list)
 
@@ -58,11 +61,12 @@ def main():
         output_file_path = os.path.join('previous-runs', output_file_name)
         domain_status_df.to_excel(output_file_path, index=False)
 
-        # Calculate and display the total time it took for the program to run
+        # Calculate and display the total time taken and the number of threads used
         end_time = datetime.now()
         total_time = end_time - start_time
         print(f"Domain status data saved to '{output_file_path}'.")
         print(f"Total time taken: {total_time}")
+        print(f"Number of threads used: {num_threads}")
 
     except FileNotFoundError:
         print("File not found. Please check the file path.")
