@@ -27,6 +27,9 @@ def main():
     file_path = 'files\DomainTracking.xlsx'
 
     try:
+        # Record the start time before the main execution starts
+        start_time = datetime.now()
+
         spreadsheet_data = read_spreadsheet(file_path)
 
         # Extract the 'Domain' column from the DataFrame as a list
@@ -55,7 +58,11 @@ def main():
         output_file_path = os.path.join('previous-runs', output_file_name)
         domain_status_df.to_excel(output_file_path, index=False)
 
+        # Calculate and display the total time it took for the program to run
+        end_time = datetime.now()
+        total_time = end_time - start_time
         print(f"Domain status data saved to '{output_file_path}'.")
+        print(f"Total time taken: {total_time}")
 
     except FileNotFoundError:
         print("File not found. Please check the file path.")
