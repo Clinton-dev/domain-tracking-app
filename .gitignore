@@ -1,3 +1,4 @@
 *.json
 previous-runs/
 virtual
+__pycache__
