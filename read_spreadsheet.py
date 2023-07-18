@@ -3,7 +3,8 @@ import pandas as pd
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from tqdm import tqdm  # Import tqdm library for the progress bar
+from tqdm import tqdm
+import humanize  # Import humanize library for human-readable time format
 
 def read_spreadsheet(file_path):
     # Read the spreadsheet file into a pandas DataFrame, skip the first two rows
@@ -71,8 +72,12 @@ def main():
         # Calculate and display the total time taken and the number of threads used
         end_time = datetime.now()
         total_time = end_time - start_time
-        print(f"Domain status data saved to '{output_file_path}'.")
-        print(f"Total time taken: {total_time}")
+
+        # Format the total time to be human-readable
+        formatted_time = humanize.precisedelta(total_time, minimum_unit='seconds')
+
+        print(f"\nDomain status data saved to '{output_file_path}'.")
+        print(f"Total time taken: {formatted_time}")
         print(f"Number of threads used: {num_threads}")
 
     except FileNotFoundError:
