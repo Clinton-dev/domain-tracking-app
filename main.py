@@ -5,10 +5,12 @@ from read_spreadsheet import read_spreadsheet
 from check_domain_status import check_domain_status
 from save_to_excel import save_domain_status_to_excel
 from datetime import datetime
+from terminaltables import SingleTable
+
 
 
 def main():
-    file_path = "files\DomainTracking.xlsx"
+    file_path = "files\Domain Tracking.xlsx"
 
     try:
         start_time = datetime.now()
@@ -31,13 +33,42 @@ def main():
 
         output_file_path = save_domain_status_to_excel(domain_status_list)
 
+        num_up_sites = sum(
+            1 for domain, status in domain_status_list if status == "Up and running"
+        )
+        num_down_sites = sum(
+            1 for domain, status in domain_status_list if status != "Up and running"
+        )
+
         end_time = datetime.now()
         total_time = end_time - start_time
         formatted_time = humanize.precisedelta(total_time, minimum_unit="seconds")
 
-        print(f"\nDomain status data saved to '{output_file_path}'.")
-        print(f"Total time taken: {formatted_time}")
-        print(f"Number of threads used: {executor._max_workers}")
+        print("\n" + "=" * 40)  # Top border
+        print("Domain status data saved to 'previous-runs'")
+        print("=" * 40)  # Middle border
+
+        # Prepare the data for the table
+        table_data = [
+            ["Total time taken", formatted_time],
+            ["Number of threads used", executor._max_workers],
+            ["Number of sites that are up", num_up_sites],
+            ["Number of sites that are down", num_down_sites]
+        ]
+
+        # Create a SingleTable instance and set the title
+        table_instance = SingleTable(table_data, title="Execution Summary")
+
+        # Modify the border style to use dotted lines
+        table_instance.inner_heading_row_border = False
+        table_instance.inner_row_border = False
+        table_instance.outer_border = False
+        table_instance.junction_char = "."
+
+        # Render the table and print it
+        print(table_instance.table)
+
+        print("=" * 40)  # Bottom border
 
     except FileNotFoundError:
         print("File not found. Please check the file path.")
