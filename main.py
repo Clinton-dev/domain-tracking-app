@@ -6,7 +6,7 @@ from check_domain_status import check_domain_status
 from save_to_excel import save_domain_status_to_excel
 from datetime import datetime
 from terminaltables import SingleTable
-
+import pandas as pd
 
 
 def main():
@@ -53,7 +53,7 @@ def main():
             ["Total time taken", formatted_time],
             ["Number of threads used", executor._max_workers],
             ["Number of sites that are up", num_up_sites],
-            ["Number of sites that are down", num_down_sites]
+            ["Number of sites that are down", num_down_sites],
         ]
 
         # Create a SingleTable instance and set the title
