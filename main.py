@@ -34,10 +34,10 @@ def main():
         output_file_path = save_domain_status_to_excel(domain_status_list)
 
         num_up_sites = sum(
-            1 for domain, status in domain_status_list if status == "Up and running"
+            1 for _, status, *_ in domain_status_list if status == "Active"
         )
         num_down_sites = sum(
-            1 for domain, status in domain_status_list if status != "Up and running"
+            1 for _, status, *_ in domain_status_list if status != "Active"
         )
 
         end_time = datetime.now()

@@ -12,20 +12,34 @@ def save_domain_status_to_excel(domain_status_list):
     Returns:
         str: The path of the saved Excel file.
     """
-    columns = ["Domain", "Status"]
+    columns = [
+        "No.",
+        "DOMAIN",
+        "REGISTERING COMPANY",
+        "WEBSITE STATUS",
+        "REGISTRATION DATE",
+        "WEBSITE HOST",
+        "DEVELOPER HANDLING",
+        "SERVER HANDLING",
+        "TODAY",
+        "NEXT DUE DATE",
+        "DAYS TO DUE DATE",
+        "AMOUNT +VAT (Ksh.)",
+        "PAID BY (COMPANY)",
+    ]
     domain_status_df = pd.DataFrame(domain_status_list, columns=columns)
 
-    # Filter sites with "Up and running"
-    filtered_df = domain_status_df[domain_status_df["Status"] != "Up and running"]
-
     now = datetime.now()
-    current_time = now.strftime("%Y-%m-%d_%H-%M-%S")
-    output_file_name = f"DomainStatus_{current_time}.xlsx"
+    today = now.strftime("%d-%b-%Y")
+
+    # Update the "TODAY" column with the current date
+    domain_status_df["TODAY"] = today
 
     if not os.path.exists("previous-runs"):
         os.makedirs("previous-runs")
 
+    output_file_name = f"DomainStatus_{now.strftime('%Y-%m-%d_%H-%M-%S')}.xlsx"
     output_file_path = os.path.join("previous-runs", output_file_name)
-    filtered_df.to_excel(output_file_path, index=False)
+    domain_status_df.to_excel(output_file_path, index=False)
 
     return output_file_path
