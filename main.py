@@ -31,13 +31,15 @@ def main():
 
         domain_status_list = [future.result() for future in futures]
 
-        output_file_path = save_domain_status_to_excel(domain_status_list)
+        output_file_path = save_domain_status_to_excel(
+            domain_status_list, spreadsheet_data
+        )
 
         num_up_sites = sum(
-            1 for _, status, *_ in domain_status_list if status == "Active"
+            1 for domain, status in domain_status_list if status == "Up and running"
         )
         num_down_sites = sum(
-            1 for _, status, *_ in domain_status_list if status != "Active"
+            1 for domain, status in domain_status_list if status != "Up and running"
         )
 
         end_time = datetime.now()
